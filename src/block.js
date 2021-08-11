@@ -19,7 +19,9 @@ class Block {
 		this.hash = null;                                           // Hash of the block
 		this.height = 0;                                            // Block Height (consecutive number of each block)
 		this.body = Buffer.from(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
-		this.time = 0;                                              // Timestamp for the Block creation
+		this.time = 0;
+    this.owner = null;
+    this.star = null;                                          // Timestamp for the Block creation
 		this.previousBlockHash = null;                              // Reference to the previous Block Hash
     }
 
@@ -35,24 +37,28 @@ class Block {
      *  5. Resolve true or false depending if it is valid or not.
      *  Note: to access the class values inside a Promise code you need to create an auxiliary value `let self = this;`
      */
-    validate() {
-        let self = this;
-        return new Promise((resolve, reject) => {
-            // Save in auxiliary variable the current block hash
-						let currentHash = self.hash;
-            // Recalculate the hash of the Block
-            // Comparing if the hashes changed
-            // Returning the Block is not valid
-            // Returning the Block is valid
-						if(currentHash == SHA256(JSON.stringify(self)).toString())
-						{
-							resolve(true);
-						}
-						else {
-							reject(false);
-						}
-        });
-    }
+     validate() {
+   let self = this;
+   return new Promise((resolve, reject) => {
+     try {
+       // Save in auxiliary variable the current block hash
+       const currentHash = self.hash;
+       self.hash = null;
+       // Recalculate the hash of the Block
+       // Comparing if the hashes changed
+       // Returning the Block is not valid
+       // Returning the Block is valid
+       const blockHash = SHA256(JSON.stringify(self)).toString();
+       self.hash = currentHash;
+       resolve(currentHash === blockHash);
+     } catch (err) {
+       reject(new Error(err));
+     }
+   });
+ }
+
+
+
 
     /**
      *  Auxiliary Method to return the block body (decoding the data)
@@ -76,7 +82,7 @@ class Block {
 							resolve(decodedData);
 						}
 						else {
-							reject("This is the genesis block");
+							resolve("This is the genesis block");
 						}
         });
     }
